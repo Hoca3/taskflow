@@ -1,0 +1,16 @@
+# Node
+node_modules
+
+# Vite
+dist
+
+# Java
+target/
+*.class
+
+# IDE
+.idea
+.vscode
+
+# Mac
+.DS_Store
