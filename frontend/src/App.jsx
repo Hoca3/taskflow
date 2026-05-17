@@ -1,35 +1,72 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function App() {
-  const [tasks, setTasks] = useState([
-    { id: 1, title: "Learn React" },
-    { id: 2, title: "Build portfolio project" },
-  ]);
-
+  const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
 
-  const addTask = () => {
+  const API_URL = "http://localhost:8080/tasks";
+
+  // Load tasks from backend
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const response = await fetch(API_URL);
+      const data = await response.json();
+      setTasks(data);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  };
+
+  const addTask = async () => {
     if (!newTask.trim()) return;
 
     const task = {
-      id: Date.now(),
       title: newTask,
+      completed: false,
     };
 
-    setTasks([...tasks, task]);
-    setNewTask("");
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(task),
+      });
+
+      const savedTask = await response.json();
+
+      setTasks([...tasks, savedTask]);
+      setNewTask("");
+    } catch (error) {
+      console.error("Error adding task:", error);
+    }
   };
 
-  const handleNewTaskChange = (e) => setNewTask(e.target.value);
+  const deleteTask = async (id) => {
+    try {
+      await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+      });
+
+      setTasks(tasks.filter((task) => task.id !== id));
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
+  };
+
+  const handleNewTaskChange = (e) => {
+    setNewTask(e.target.value);
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       addTask();
     }
-  };
-
-  const deleteTask = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
   };
 
   return (
